@@ -353,12 +353,14 @@ function TimePickerCtrl($scope, $mdMedia) {
 	    self.currentView = self.currentView == self.VIEW_HOURS ? self.VIEW_MINUTES : self.VIEW_HOURS;
 	};
 
-	this.setAM = function() {
+	this.setAM = function($event) {
+        $event.stopPropagation();
         if(self.time.format("A") == "PM")
             self.time.hour(self.time.hour() - 12);
 	};
 
-    this.setPM = function() {
+    this.setPM = function($event) {
+        $event.stopPropagation();
         if(self.time.format("A") == "AM")
             self.time.hour(self.time.hour() + 12);
 	};
@@ -472,7 +474,7 @@ module.directive("mdpClock", ["$animate", "$timeout", function($animate, $timeou
                             '<md-toolbar ng-style="clock.getPointerStyle()" class="mdp-pointer md-primary">' +
                                 '<span class="mdp-clock-selected md-button md-raised md-primary"></span>' +
                             '</md-toolbar>' +
-                            '<md-button ng-class="{ \'md-primary\': clock.selected == step }" class="md-icon-button md-raised mdp-clock-deg{{ ::(clock.STEP_DEG * ($index + 1)) }}" ng-repeat="step in clock.steps" ng-click="clock.setTime(step)">{{ step }}</md-button>' +
+                            '<md-button ng-class="{ \'md-primary\': clock.selected == step }" class="md-icon-button md-raised mdp-clock-deg{{ ::(clock.STEP_DEG * ($index + 1)) }}" ng-repeat="step in clock.steps" my-click="clock.setTime(step)" md-prevent-menu-close="md-prevent-menu-close">{{ step }}</md-button>' +
                         '</div>' +
                     '</div>',
         controller: ["$scope", ClockCtrl],
@@ -510,18 +512,36 @@ module.directive("mdpClock", ["$animate", "$timeout", function($animate, $timeou
     }
 }]);
 
+// Avoid closing the menu item on click.
+module.directive('myClick', function ($parse, $rootScope) {
+    return {
+        restrict: 'A',
+        compile: function ($element, attrs) {
+            var fn = $parse(attrs.myClick, null, true);
+            return function myClick(scope, element) {
+                element.on('click', function (event) {
+                    var callback = function () {
+                        fn(scope, { $event: event });
+                    };
+                    scope.$apply(callback);
+                })
+            }
+        }
+    }
+})
+
 module.directive("mdpTimePicker", ["$timeout", function($timeout) {
     return  {
         template: '<md-menu md-position-mode="target-right target" width="6"><md-input-container><input ng-model="timepicker.currentDate" aria-label="The date" ng-click="$mdOpenMenu()"></md-input-container>' +
                 '<md-menu-content class="mdp-timepicker-menu" layout-gt-xs="row">' +
                 '<md-toolbar layout-gt-xs="column" layout-xs="row" layout-align="center center" flex class="mdp-timepicker-time md-hue-1 md-primary">' +
                     '<div class="mdp-timepicker-selected-time">' +
-                        '<span ng-class="{ \'active\': timepicker.currentView == timepicker.VIEW_HOURS }" ng-click="timepicker.currentView = timepicker.VIEW_HOURS">{{ timepicker.time.format("h") }}</span>:' +
-                        '<span ng-class="{ \'active\': timepicker.currentView == timepicker.VIEW_MINUTES }" ng-click="timepicker.currentView = timepicker.VIEW_MINUTES">{{ timepicker.time.format("mm") }}</span>' +
+                        '<span ng-class="{ \'active\': timepicker.currentView == timepicker.VIEW_HOURS }" my-click="timepicker.currentView = timepicker.VIEW_HOURS">{{ timepicker.time.format("h") }}</span>:' +
+                        '<span ng-class="{ \'active\': timepicker.currentView == timepicker.VIEW_MINUTES }" my-click="timepicker.currentView = timepicker.VIEW_MINUTES">{{ timepicker.time.format("mm") }}</span>' +
                     '</div>' +
                     '<div layout="column" class="mdp-timepicker-selected-ampm">' +
-                        '<span ng-click="timepicker.setAM()" ng-class="{ \'active\': timepicker.time.format(\'A\') == \'AM\' }">AM</span>' +
-                        '<span ng-click="timepicker.setPM()" ng-class="{ \'active\': timepicker.time.format(\'A\') == \'PM\' }">PM</span>' +
+                        '<span my-click="timepicker.setAM($event)" ng-class="{ \'active\': timepicker.time.format(\'A\') == \'AM\' }">AM</span>' +
+                        '<span my-click="timepicker.setPM($event)" ng-class="{ \'active\': timepicker.time.format(\'A\') == \'PM\' }">PM</span>' +
                     '</div>' +
                 '</md-toolbar>' +
                 '<div>' +

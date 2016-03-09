@@ -320,6 +320,9 @@ mdp-calendar {
   min-height: 0;
   pointer-events: none;
 }
+.mdp-timepicker-menu {
+  width: 360px;
+}
 .mdp-timepicker .mdp-clock-switch-container {
   padding: 20px;
   width: 309px;

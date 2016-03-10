@@ -1,4 +1,5 @@
 /* global moment, angular */
+'use strict';
 
 function TimePickerCtrl($scope, $mdMedia) {
 	var self = this;
@@ -6,7 +7,9 @@ function TimePickerCtrl($scope, $mdMedia) {
     this.VIEW_MINUTES = 2;
     this.currentDate = Date.now();
     this.currentView = this.VIEW_HOURS;
-    this.time = moment(self.currentDate);
+
+    this.time = moment(this.currentDate);
+    this.formattedTime = this.time.format('LT');
 
     this.clockHours = parseInt(this.time.format("h"));
     this.clockMinutes = parseInt(this.time.minutes());
@@ -29,6 +32,14 @@ function TimePickerCtrl($scope, $mdMedia) {
             self.time.hour(self.time.hour() + 12);
 	};
 
+    this.confirm = function (theTime) {
+        this.formattedTime = theTime.format('LT');
+        this.ngModel = theTime.format('ddd MMM DD YYYY hh:mm:ss [GMT]ZZ [(CST)]')
+    };
+
+    this.cancel = function () {
+    };
+
     this.cancelLabel = "Cancel";
     this.okLabel = "OK";
 }
@@ -48,7 +59,7 @@ function ClockCtrl($scope) {
         "minutes": {
             range: 60,
         }
-    }
+    };
 
     this.getPointerStyle = function() {
         var divider = 1;
@@ -65,7 +76,7 @@ function ClockCtrl($scope) {
             "-webkit-transform": "rotate(" + degrees + "deg)",
             "-ms-transform": "rotate(" + degrees + "deg)",
             "transform": "rotate(" + degrees + "deg)"
-        }
+        };
     };
 
     this.setTimeByDeg = function(deg) {
@@ -124,7 +135,7 @@ function ClockCtrl($scope) {
     this.init();
 }
 
-module.directive("mdpClock", ["$animate", "$timeout", function($animate, $timeout) {
+module.directive("mdpClock", ["$timeout", function($timeout) {
     return {
         restrict: 'E',
         bindToController: {
@@ -173,7 +184,7 @@ module.directive("mdpClock", ["$animate", "$timeout", function($animate, $timeou
                 element.off("mousemove", onEvent);
             });
         }
-    }
+    };
 }]);
 
 // Avoid closing the menu item on click.
@@ -188,15 +199,15 @@ module.directive('myClick', function ($parse, $rootScope) {
                         fn(scope, { $event: event });
                     };
                     scope.$apply(callback);
-                })
-            }
+                });
+            };
         }
-    }
-})
+    };
+});
 
-module.directive("mdpTimePicker", ["$timeout", function($timeout) {
+module.directive("mdpTimePicker", function() {
     return  {
-        template: '<md-menu md-position-mode="target-right target" width="6"><md-input-container><input ng-model="timepicker.currentDate" aria-label="The date" ng-click="$mdOpenMenu()"></md-input-container>' +
+        template: '<md-menu md-position-mode="target-right target" width="6"><md-input-container><input ng-model="timepicker.formattedTime" aria-label="The date" ng-click="$mdOpenMenu()"></md-input-container>' +
                 '<md-menu-content class="mdp-timepicker-menu" layout-gt-xs="row">' +
                 '<md-toolbar layout-gt-xs="column" layout-xs="row" layout-align="center center" flex class="mdp-timepicker-time md-hue-1 md-primary">' +
                     '<div class="mdp-timepicker-selected-time">' +
@@ -217,16 +228,16 @@ module.directive("mdpTimePicker", ["$timeout", function($timeout) {
                     '<md-dialog-actions layout="row">' +
                         '<span flex></span>' +
                         '<md-button ng-click="timepicker.cancel()" aria-label="{{timepicker.cancelLabel}}">{{timepicker.cancelLabel}}</md-button>' +
-                        '<md-button ng-click="timepicker.confirm()" class="md-primary" aria-label="{{timepicker.okLabel}}">{{timepicker.okLabel}}</md-button>' +
+                        '<md-button ng-click="timepicker.confirm(timepicker.time)" class="md-primary" aria-label="{{timepicker.okLabel}}">{{timepicker.okLabel}}</md-button>' +
                     '</md-dialog-actions>' +
                 '</div>' +
                 '</md-menu-content></md-menu>',
         bindToController: true,
         controller: ["$scope", "$mdMedia", TimePickerCtrl],
         controllerAs: 'timepicker',
-        require: '?ngModel',
         scope: {
-            "timeFormat": "@mdpFormat"
+            "timeFormat": "@mdpFormat",
+            "ngModel": "="
         }
     };
-}]);
+});

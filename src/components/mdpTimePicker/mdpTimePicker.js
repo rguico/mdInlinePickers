@@ -8,7 +8,7 @@ function TimePickerCtrl($scope, $mdMedia) {
     this.currentDate = Date.now();
     this.currentView = this.VIEW_HOURS;
 
-    this.time = moment(this.currentDate);
+    this.time = $scope.timepicker.ngModel ? moment($scope.timepicker.ngModel) : moment(this.currentDate);
     this.formattedTime = this.time.format('LT');
 
     this.clockHours = parseInt(this.time.format("h"));
@@ -34,7 +34,7 @@ function TimePickerCtrl($scope, $mdMedia) {
 
     this.confirm = function (theTime) {
         this.formattedTime = theTime.format('LT');
-        this.ngModel = theTime.format('ddd MMM DD YYYY hh:mm:ss [GMT]ZZ [(CST)]')
+        this.ngModel = theTime.toDate();
     };
 
     this.cancel = function () {

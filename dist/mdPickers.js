@@ -339,13 +339,15 @@ module.directive("mdpDatePicker", ["$mdpDatePicker", "$timeout", function($mdpDa
 
 function TimePickerCtrl($scope, $mdMedia) {
 	var self = this;
+
     this.VIEW_HOURS = 1;
     this.VIEW_MINUTES = 2;
     this.currentDate = Date.now();
     this.currentView = this.VIEW_HOURS;
 
-    this.time = $scope.timepicker.ngModel ? moment($scope.timepicker.ngModel) : moment(this.currentDate);
-    this.formattedTime = this.time.format('LT');
+    // in toString() format
+    this.time = this.time ? moment(this.time) : moment(this.currentDate);
+    this.oldTime = angular.copy(this.time);
 
     this.clockHours = parseInt(this.time.format("h"));
     this.clockMinutes = parseInt(this.time.minutes());
@@ -368,12 +370,10 @@ function TimePickerCtrl($scope, $mdMedia) {
             self.time.hour(self.time.hour() + 12);
 	};
 
-    this.confirm = function (theTime) {
-        this.formattedTime = theTime.format('LT');
-        this.ngModel = theTime.toDate();
-    };
+    this.confirm = function () {};
 
     this.cancel = function () {
+        this.time = this.oldTime;
     };
 
     this.cancelLabel = "Cancel";
@@ -543,7 +543,7 @@ module.directive('myClick', function ($parse, $rootScope) {
 
 module.directive("mdpTimePicker", function() {
     return  {
-        template: '<md-menu md-position-mode="target-right target" width="6"><md-input-container><input ng-model="timepicker.formattedTime" aria-label="The date" ng-click="$mdOpenMenu()"></md-input-container>' +
+        template: '<md-menu md-position-mode="target-right target" width="6"><a ng-bind="formattedTime" ng-click="$mdOpenMenu()"></a>' +
                 '<md-menu-content class="mdp-timepicker-menu" layout-gt-xs="row">' +
                 '<md-toolbar layout-gt-xs="column" layout-xs="row" layout-align="center center" flex class="mdp-timepicker-time md-hue-1 md-primary">' +
                     '<div class="mdp-timepicker-selected-time">' +
@@ -564,16 +564,37 @@ module.directive("mdpTimePicker", function() {
                     '<md-dialog-actions layout="row">' +
                         '<span flex></span>' +
                         '<md-button ng-click="timepicker.cancel()" aria-label="{{timepicker.cancelLabel}}">{{timepicker.cancelLabel}}</md-button>' +
-                        '<md-button ng-click="timepicker.confirm(timepicker.time)" class="md-primary" aria-label="{{timepicker.okLabel}}">{{timepicker.okLabel}}</md-button>' +
+                        '<md-button ng-click="timepicker.confirm()" class="md-primary" aria-label="{{timepicker.okLabel}}">{{timepicker.okLabel}}</md-button>' +
                     '</md-dialog-actions>' +
                 '</div>' +
                 '</md-menu-content></md-menu>',
         bindToController: true,
         controller: ["$scope", "$mdMedia", TimePickerCtrl],
         controllerAs: 'timepicker',
+        require: 'ngModel',
         scope: {
             "timeFormat": "@mdpFormat",
-            "ngModel": "="
+            "time": "=ngModel"
+        },
+        link: function($scope, $el, $attrs, ngModel) {
+            ngModel.$render = function () {
+                $scope.formattedTime = ngModel.$viewValue;
+            };
+
+            ngModel.$formatters.push(function (modelValue) {
+                return moment(modelValue).format('LT');
+            });
+
+            ngModel.$parsers.push(function (viewValue) {
+                return moment(viewValue, 'hh:mm a');
+            });
+
+            $scope.$watch(function ($scope) {
+                return $scope.timepicker.time.toString();
+            }, function (newTime) {
+                ngModel.$setViewValue(moment(newTime).format('LT'));
+                ngModel.$render();
+            });
         }
     };
 });

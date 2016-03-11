@@ -344,11 +344,11 @@ function TimePickerCtrl($scope, $mdMedia) {
     this.VIEW_MINUTES = 2;
     this.currentView = this.VIEW_HOURS;
 
-    this.time = this.time ? moment(this.time) : moment();
-    this.oldTime = angular.copy(this.time);
+    this.momentTime = this.time ? moment(this.time) : moment();
+    this.oldTime = angular.copy(this.momentTime);
 
-    this.clockHours = parseInt(this.time.format("h"));
-    this.clockMinutes = parseInt(this.time.minutes());
+    this.clockHours = parseInt(this.momentTime.format("h"));
+    this.clockMinutes = parseInt(this.momentTime.minutes());
 
 	$scope.$mdMedia = $mdMedia;
 
@@ -358,20 +358,22 @@ function TimePickerCtrl($scope, $mdMedia) {
 
 	this.setAM = function($event) {
         $event.stopPropagation();
-        if(self.time.format("A") == "PM")
-            self.time.hour(self.time.hour() - 12);
+        if(self.momentTime.format("A") == "PM")
+            self.momentTime.hour(self.momentTime.hour() - 12);
 	};
 
     this.setPM = function($event) {
         $event.stopPropagation();
-        if(self.time.format("A") == "AM")
-            self.time.hour(self.time.hour() + 12);
+        if(self.momentTime.format("A") == "AM")
+            self.momentTime.hour(self.momentTime.hour() + 12);
 	};
 
-    this.confirm = function () {};
+    this.confirm = function () {
+        this.time = this.momentTime.toDate();
+    };
 
     this.cancel = function () {
-        this.time = this.oldTime;
+        this.time = this.oldTime.toDate();
     };
 
     this.cancelLabel = "Cancel";
@@ -541,22 +543,22 @@ module.directive('myClick', function ($parse, $rootScope) {
 
 module.directive("mdpTimePicker", function() {
     return  {
-        template: '<md-menu md-position-mode="target-right target" width="6"><a ng-bind="formattedTime" ng-click="$mdOpenMenu()"></a>' +
+        template: '<md-menu md-position-mode="target-right target" width="6"><a ng-bind="formattedTime" ng-click="openMenu($mdOpenMenu)"></a>' +
                 '<md-menu-content class="mdp-timepicker-menu" layout-gt-xs="row">' +
                 '<md-toolbar layout-gt-xs="column" layout-xs="row" layout-align="center center" flex class="mdp-timepicker-time md-hue-1 md-primary">' +
                     '<div class="mdp-timepicker-selected-time">' +
-                        '<span ng-class="{ \'active\': timepicker.currentView == timepicker.VIEW_HOURS }" my-click="timepicker.currentView = timepicker.VIEW_HOURS">{{ timepicker.time.format("h") }}</span>:' +
-                        '<span ng-class="{ \'active\': timepicker.currentView == timepicker.VIEW_MINUTES }" my-click="timepicker.currentView = timepicker.VIEW_MINUTES">{{ timepicker.time.format("mm") }}</span>' +
+                        '<span ng-class="{ \'active\': timepicker.currentView == timepicker.VIEW_HOURS }" my-click="timepicker.currentView = timepicker.VIEW_HOURS">{{ timepicker.momentTime.format("h") }}</span>:' +
+                        '<span ng-class="{ \'active\': timepicker.currentView == timepicker.VIEW_MINUTES }" my-click="timepicker.currentView = timepicker.VIEW_MINUTES">{{ timepicker.momentTime.format("mm") }}</span>' +
                     '</div>' +
                     '<div layout="column" class="mdp-timepicker-selected-ampm">' +
-                        '<span my-click="timepicker.setAM($event)" ng-class="{ \'active\': timepicker.time.format(\'A\') == \'AM\' }">AM</span>' +
-                        '<span my-click="timepicker.setPM($event)" ng-class="{ \'active\': timepicker.time.format(\'A\') == \'PM\' }">PM</span>' +
+                        '<span my-click="timepicker.setAM($event)" ng-class="{ \'active\': timepicker.momentTime.format(\'A\') == \'AM\' }">AM</span>' +
+                        '<span my-click="timepicker.setPM($event)" ng-class="{ \'active\': timepicker.momentTime.format(\'A\') == \'PM\' }">PM</span>' +
                     '</div>' +
                 '</md-toolbar>' +
                 '<div>' +
                     '<div class="mdp-clock-switch-container" ng-switch="timepicker.currentView" layout layout-align="center center">' +
-                        '<mdp-clock class="mdp-animation-zoom" time="timepicker.time" type="hours" ng-switch-when="1"></mdp-clock>' +
-                        '<mdp-clock class="mdp-animation-zoom" time="timepicker.time" type="minutes" ng-switch-when="2"></mdp-clock>' +
+                        '<mdp-clock class="mdp-animation-zoom" time="timepicker.momentTime" type="hours" ng-switch-when="1"></mdp-clock>' +
+                        '<mdp-clock class="mdp-animation-zoom" time="timepicker.momentTime" type="minutes" ng-switch-when="2"></mdp-clock>' +
                     '</div>' +
 
                     '<md-dialog-actions layout="row">' +
@@ -574,17 +576,22 @@ module.directive("mdpTimePicker", function() {
             "timeFormat": "@mdpFormat",
             "time": "=ngModel"
         },
-        link: function($scope, $el, $attrs, ngModel) {
-            ngModel.$render = function () {
-                $scope.formattedTime = ngModel.$viewValue;
+        link: function($scope, $el, $attrs, ngModelCtrl) {
+            $scope.openMenu = function ($mdOpenMenu) {
+                $scope.timepicker.oldTime = angular.copy($scope.timepicker.momentTime);
+                $mdOpenMenu();
+            }
+
+            ngModelCtrl.$render = function () {
+                $scope.formattedTime = ngModelCtrl.$viewValue;
             };
 
-            ngModel.$formatters.push(function (modelValue) {
+            ngModelCtrl.$formatters.push(function (modelValue) {
                 return moment(modelValue).format('LT');
             });
 
-            ngModel.$parsers.push(function (viewValue) {
-                return moment(viewValue, 'hh:mm a');
+            ngModelCtrl.$parsers.push(function (viewValue) {
+                return moment(viewValue, 'hh:mm a').toDate();
             });
 
             $scope.$watch(function ($scope) {
@@ -592,8 +599,8 @@ module.directive("mdpTimePicker", function() {
                     return $scope.timepicker.time.toString();
                 }
             }, function (newTime) {
-                ngModel.$setViewValue(moment(new Date(newTime)).format('LT'));
-                ngModel.$render();
+                ngModelCtrl.$setViewValue(moment(new Date(newTime)).format('LT'));
+                ngModelCtrl.$render();
             });
         }
     };

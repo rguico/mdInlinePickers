@@ -342,11 +342,9 @@ function TimePickerCtrl($scope, $mdMedia) {
 
     this.VIEW_HOURS = 1;
     this.VIEW_MINUTES = 2;
-    this.currentDate = Date.now();
     this.currentView = this.VIEW_HOURS;
 
-    // in toString() format
-    this.time = this.time ? moment(this.time) : moment(this.currentDate);
+    this.time = this.time ? moment(this.time) : moment();
     this.oldTime = angular.copy(this.time);
 
     this.clockHours = parseInt(this.time.format("h"));
@@ -590,9 +588,11 @@ module.directive("mdpTimePicker", function() {
             });
 
             $scope.$watch(function ($scope) {
-                return $scope.timepicker.time.toString();
+                if ($scope.timepicker.time) {
+                    return $scope.timepicker.time.toString();
+                }
             }, function (newTime) {
-                ngModel.$setViewValue(moment(newTime).format('LT'));
+                ngModel.$setViewValue(moment(new Date(newTime)).format('LT'));
                 ngModel.$render();
             });
         }

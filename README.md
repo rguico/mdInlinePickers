@@ -1,10 +1,10 @@
 # mdPickers
-Material Design date/time pickers built with Angular Material and Moment.js
+Material Design date/time pickers built with Angular Material and Moment.js. Inline pickers utilize md-menu for display and selection.
 
 
 ## Online demos
 
-* [CodePen](http://codepen.io/alenaksu/full/eNzbrZ)
+[TODO]
 
 
 ## Requirements
@@ -19,7 +19,7 @@ Material Design date/time pickers built with Angular Material and Moment.js
 Install via Bower:
 
 ```bash
-bower install mdPickers
+bower install mdInlinePickers
 ```
 
 Use in Angular:

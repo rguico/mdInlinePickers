@@ -1,11 +1,12 @@
 {
-  "name": "mdPickers",
-  "version": "0.6.1",
-  "homepage": "https://github.com/alenaksu/mdPickers",
+  "name": "mdInlinePickers",
+  "version": "0.0.1",
+  "homepage": "https://github.com/rguico/mdInlinePickers",
   "authors": [
-    "alenaksu"
+    "alenaksu",
+    "rguico"
   ],
-  "description": "Material Design date/time pickers built with Angular Material and Moment.js",
+  "description": "Inline, md-menu based Material Design date/time pickers built with Angular Material and Moment.js",
   "main": [
     "dist/mdPickers.min.js",
     "dist/mdPickers.min.css"

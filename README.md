@@ -1,4 +1,4 @@
-# mdPickers
+# mdInlinePickers
 Material Design date/time pickers built with Angular Material and Moment.js. Inline pickers utilize md-menu for display and selection.
 
 

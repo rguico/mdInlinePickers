@@ -170,14 +170,6 @@ module.directive("mdpClock", ["$timeout", function($timeout) {
                 });
             };
 
-            element.on("mousedown", function() {
-               element.on("mousemove", onEvent);
-            });
-
-            element.on("mouseup", function(e) {
-                element.off("mousemove", onEvent);
-            });
-
             element.on("click", onEvent);
             scope.$on("$destroy", function() {
                 element.off("click", onEvent);

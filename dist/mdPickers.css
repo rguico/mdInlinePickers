@@ -322,10 +322,10 @@ mdp-calendar {
 }
 .mdp-timepicker-menu {
   width: 360px;
+  padding: 0;
 }
-.mdp-timepicker .mdp-clock-switch-container {
-  padding: 20px;
-  width: 309px;
+.mdp-timepicker-menu .mdp-clock-switch-container {
+  padding: 8px 8px 0;
 }
 .mdp-timepicker .mdp-timepicker-time {
   padding: 15px;

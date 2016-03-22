@@ -1,6 +1,6 @@
 {
   "name": "mdPickers",
-  "version": "0.0.1",
+  "version": "0.6.3",
   "description": "Inline, md-menu based Material Design date/time pickers for Angular Material",
   "main": "gulpfile.js",
   "scripts": {
